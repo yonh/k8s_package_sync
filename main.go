@@ -80,7 +80,6 @@ func read_and_download_packages(file string) {
 				p_filename := "mirror/apt/" + p_arr[0]
 
 				download("https://packages.cloud.google.com/apt/" + p_arr[0], p_filename)
-				// todo verify hash
 				verify_hash(p_filename,  p_arr[1])
 			}
 		}
@@ -89,7 +88,7 @@ func read_and_download_packages(file string) {
 
 func verify_hash(file string, hash string) {
 
-	hash, err := hashSHA256File(file)
+	hash, err := file_hash_sha256(file)
 	if (err != nil) {
 		fmt.Printf("%v", err)
 	}
@@ -100,7 +99,7 @@ func verify_hash(file string, hash string) {
 	}
 }
 
-func hashSHA256File(filePath string) (string, error) {
+func file_hash_sha256(filePath string) (string, error) {
 	var hashValue string
 	file, err := os.Open(filePath)
 	if err != nil {

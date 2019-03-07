@@ -7,12 +7,6 @@ import (
 	"regexp"
 )
 
-//func main() {
-//	str := read_file("Packages")
-//
-//	parse_package(str)
-//}
-
 func parse_package(s string) [][2]string {
 	r, _ := regexp.Compile("Filename: (.*)[\\s\\S]*?SHA256: (.*)")
 
