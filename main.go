@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	download("https://packages.cloud.google.com/apt/doc/apt-key.gpg", "mirror/apt/doc/apt-key.gpg")
 	download("https://packages.cloud.google.com/apt/dists/kubernetes-xenial/InRelease", "mirror/apt/dists/kubernetes-xenial/InRelease")
 	download("https://packages.cloud.google.com/apt/dists/kubernetes-xenial/Release", "mirror/apt/dists/kubernetes-xenial/Release")
@@ -65,11 +64,9 @@ func read_and_download_packages(file string) {
 			os.MkdirAll(dir, 0755)
 		}
 
-		download(url, dir+"/"+filename)
-
-		// verify hash
-		verify_hash(dir + "/" + filename, s[1])
-
+		if (!file_exists(dir + filename) || !verify_hash(dir + "/" + filename, s[1])) {
+			download(url, dir+"/"+filename)
+		}
 
 		// download packages
 		if (filepath.Base(filename) == "Packages") {
@@ -79,24 +76,31 @@ func read_and_download_packages(file string) {
 			for _, p_arr := range packages_arr {
 				p_filename := "mirror/apt/" + p_arr[0]
 
-				download("https://packages.cloud.google.com/apt/" + p_arr[0], p_filename)
-				verify_hash(p_filename,  p_arr[1])
+				if (!file_exists(p_filename) || !verify_hash(p_filename,  p_arr[1])) {
+					download("https://packages.cloud.google.com/apt/" + p_arr[0], p_filename)
+				}
 			}
 		}
 	}
 }
 
-func verify_hash(file string, hash string) {
+func file_exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
 
-	hash, err := file_hash_sha256(file)
+func verify_hash(file string, hash string) bool {
+
+	file_hash, err := file_hash_sha256(file)
 	if (err != nil) {
 		fmt.Printf("%v", err)
 	}
 
-	if (hash != hash) {
-		fmt.Errorf("file hash error")
-		os.Exit(1)
-	}
+	return hash == file_hash
 }
 
 func file_hash_sha256(filePath string) (string, error) {
